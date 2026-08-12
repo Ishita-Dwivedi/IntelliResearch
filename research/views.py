@@ -1,8 +1,8 @@
 from rest_framework import viewsets
-from .models import Research, Paper, Concept, Prerequisite, Citation
+from .models import Research, Paper, Concept, PaperConcept, Prerequisite, Citation
 from .serializers import (
     ResearchSerializer, PaperSerializer, ConceptSerializer,
-    PrerequisiteSerializer, CitationSerializer,
+    PrerequisiteSerializer, CitationSerializer, PaperConceptSerializer,
 )
 
 
@@ -56,4 +56,15 @@ class CitationViewSet(viewsets.ModelViewSet):
         research_id = self.request.query_params.get("research")
         if research_id:
             qs = qs.filter(citing_paper__research_id=research_id)
+        return qs
+
+class PaperConceptViewSet(viewsets.ModelViewSet):
+    queryset = PaperConcept.objects.all()
+    serializer_class = PaperConceptSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        research_id = self.request.query_params.get("research")
+        if research_id:
+            qs = qs.filter(paper__research_id=research_id)
         return qs

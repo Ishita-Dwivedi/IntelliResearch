@@ -22,4 +22,5 @@ export const api = {
   listConcepts: (researchId) => request(`/concepts/?research=${researchId}`),
   listPrerequisites: (researchId) => request(`/prerequisites/?research=${researchId}`),
   listCitations: (researchId) => request(`/citations/?research=${researchId}`),
+  listPaperConcepts: (researchId) => request(`/paper-concepts/?research=${researchId}`),
 };

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Research, Paper, Concept, PaperConcept, Prerequisite, Citation
-
+from .models import Research, Paper, Concept, PaperConcept, Prerequisite, Citation
 
 class PaperSerializer(serializers.ModelSerializer):
     class Meta:
@@ -35,3 +35,8 @@ class ResearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Research
         fields = ["id", "topic", "status", "created_at", "papers"]
+
+class PaperConceptSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaperConcept
+        fields = ["id", "paper", "concept", "role"]
