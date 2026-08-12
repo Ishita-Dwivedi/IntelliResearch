@@ -1,3 +1,38 @@
-from django.shortcuts import render
+from rest_framework import viewsets
+from .models import Research, Paper, Concept, Prerequisite, Citation
+from .serializers import (
+    ResearchSerializer, PaperSerializer, ConceptSerializer,
+    PrerequisiteSerializer, CitationSerializer,
+)
 
-# Create your views here.
+
+class ResearchViewSet(viewsets.ModelViewSet):
+    queryset = Research.objects.all().order_by("-created_at")
+    serializer_class = ResearchSerializer
+
+
+class PaperViewSet(viewsets.ModelViewSet):
+    queryset = Paper.objects.all()
+    serializer_class = PaperSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        research_id = self.request.query_params.get("research")
+        if research_id:
+            qs = qs.filter(research_id=research_id)
+        return qs
+
+
+class ConceptViewSet(viewsets.ModelViewSet):
+    queryset = Concept.objects.all()
+    serializer_class = ConceptSerializer
+
+
+class PrerequisiteViewSet(viewsets.ModelViewSet):
+    queryset = Prerequisite.objects.all()
+    serializer_class = PrerequisiteSerializer
+
+
+class CitationViewSet(viewsets.ModelViewSet):
+    queryset = Citation.objects.all()
+    serializer_class = CitationSerializer
