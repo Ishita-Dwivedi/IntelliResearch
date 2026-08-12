@@ -27,12 +27,33 @@ class ConceptViewSet(viewsets.ModelViewSet):
     queryset = Concept.objects.all()
     serializer_class = ConceptSerializer
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        research_id = self.request.query_params.get("research")
+        if research_id:
+            qs = qs.filter(research_id=research_id)
+        return qs
+
 
 class PrerequisiteViewSet(viewsets.ModelViewSet):
     queryset = Prerequisite.objects.all()
     serializer_class = PrerequisiteSerializer
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        research_id = self.request.query_params.get("research")
+        if research_id:
+            qs = qs.filter(paper__research_id=research_id)
+        return qs
+
 
 class CitationViewSet(viewsets.ModelViewSet):
     queryset = Citation.objects.all()
     serializer_class = CitationSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        research_id = self.request.query_params.get("research")
+        if research_id:
+            qs = qs.filter(citing_paper__research_id=research_id)
+        return qs

@@ -19,4 +19,7 @@ export const api = {
       body: JSON.stringify(data),
     }),
   listPapers: (researchId) => request(`/papers/?research=${researchId}`),
+  listConcepts: (researchId) => request(`/concepts/?research=${researchId}`),
+  listPrerequisites: (researchId) => request(`/prerequisites/?research=${researchId}`),
+  listCitations: (researchId) => request(`/citations/?research=${researchId}`),
 };
