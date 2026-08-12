@@ -66,6 +66,10 @@ function ResearchWorkspace() {
             </p>
             <Link to={`/research/${id}/papers`} style={{ color: "#7a9dff" }}>
                 Open Paper Explorer →
+            </Link>         
+            {" | "}
+            <Link to={`/research/${id}/assistant`} style={{ color: "#7a9dff" }}>
+            Ask AI Assistant →
             </Link>
         </header>
 

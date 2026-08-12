@@ -23,4 +23,10 @@ export const api = {
   listPrerequisites: (researchId) => request(`/prerequisites/?research=${researchId}`),
   listCitations: (researchId) => request(`/citations/?research=${researchId}`),
   listPaperConcepts: (researchId) => request(`/paper-concepts/?research=${researchId}`),
+  sendChatMessage: (researchId, message) =>
+    request(`/research/${researchId}/chat/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message }),
+    }),
 };

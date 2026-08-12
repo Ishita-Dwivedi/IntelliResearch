@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import ResearchSetup from "./pages/ResearchSetup";
 import ResearchWorkspace from "./pages/ResearchWorkspace";
 import PaperExplorer from "./pages/PaperExplorer";
+import AIAssistant from "./pages/AIAssistant";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/research/new" element={<ResearchSetup />} />
         <Route path="/research/:id" element={<ResearchWorkspace />} />
         <Route path="/research/:id/papers" element={<PaperExplorer />} />
+        <Route path="/research/:id/assistant" element={<AIAssistant />} />
       </Routes>
     </BrowserRouter>
   );
