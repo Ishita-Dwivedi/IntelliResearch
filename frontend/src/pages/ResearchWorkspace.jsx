@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams , Link } from "react-router-dom";
 import ReactFlow, { Background, Controls, MarkerType } from "reactflow";
 import "reactflow/dist/style.css";
 import { api } from "../api/client";
@@ -60,10 +60,13 @@ function ResearchWorkspace() {
     <div className="page research-workspace" style={{ display: "flex" }}>
       <div style={{ flex: 1, padding: 40 }}>
         <header>
-          <h1>{research.topic}</h1>
-          <p>
-            {research.papers.length} paper(s) &bull; status: {research.status}
-          </p>
+            <h1>{research.topic}</h1>
+            <p>
+                {research.papers.length} paper(s) &bull; status: {research.status}
+            </p>
+            <Link to={`/research/${id}/papers`} style={{ color: "#7a9dff" }}>
+                Open Paper Explorer →
+            </Link>
         </header>
 
         {isAnalyzing && (
