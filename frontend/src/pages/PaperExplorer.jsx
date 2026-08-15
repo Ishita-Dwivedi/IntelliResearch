@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { api } from "../api/client";
+import "../styles/theme.css";
 
 function PaperExplorer() {
   const { id } = useParams();
@@ -31,9 +32,9 @@ function PaperExplorer() {
     fetchAll();
   }, [fetchAll]);
 
-  if (loading) return <p style={{ padding: 40 }}>Loading papers...</p>;
-  if (error) return <p style={{ padding: 40 }}>Error: {error}</p>;
-  if (!research) return <p style={{ padding: 40 }}>Not found.</p>;
+  if (loading) return <div style={{ padding: 60 }}>Loading papers...</div>;
+  if (error) return <div style={{ padding: 60 }}>Error: {error}</div>;
+  if (!research) return <div style={{ padding: 60 }}>Not found.</div>;
 
   const papers = research.papers.filter((p) => {
     const label = (p.title || p.file.split("/").pop()).toLowerCase();
@@ -43,82 +44,79 @@ function PaperExplorer() {
   const selectedPaper = research.papers.find((p) => String(p.id) === String(selectedPaperId));
 
   return (
-    <div style={{ padding: 40 }}>
-      <Link to={`/research/${id}`} style={{ color: "#888" }}>
-        ← Back to Workspace
-      </Link>
-      <h1>Research Papers</h1>
-      <p style={{ color: "#888" }}>{research.topic}</p>
-
-      <input
-        type="text"
-        placeholder="Search papers..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        style={{
-          padding: 8,
-          width: 300,
-          marginTop: 10,
-          marginBottom: 20,
-          background: "#1e1e1e",
-          border: "1px solid #444",
-          color: "#fff",
-          borderRadius: 6,
-        }}
-      />
-
-      {selectedPaper ? (
-        <PaperDetail
-          paper={selectedPaper}
-          papers={research.papers}
-          prerequisites={prerequisites}
-          citations={citations}
-          onBack={() => setSelectedPaperId(null)}
-        />
-      ) : (
-        <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
-          {papers.length === 0 ? (
-            <p>No papers match your search.</p>
-          ) : (
-            papers.map((paper) => (
-              <PaperCard
-                key={paper.id}
-                paper={paper}
-                onOpen={() => setSelectedPaperId(paper.id)}
-              />
-            ))
-          )}
+    <div style={{ background: "var(--bg)", minHeight: "100vh", paddingBottom: 60 }}>
+      <div className="container" style={{ paddingTop: 24 }}>
+        <div className="pill-nav">
+          <Link to={`/research/${id}`} style={{ fontWeight: 800, fontSize: 18, color: "var(--primary)" }}>
+            ← Back to Workspace
+          </Link>
         </div>
-      )}
+      </div>
+
+      <div className="container" style={{ marginTop: 30 }}>
+        <span className="badge badge-purple">{research.topic}</span>
+        <h1 style={{ fontSize: 32, marginTop: 10 }}>Research Papers</h1>
+
+        <input
+          type="text"
+          placeholder="🔍 Search papers..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{
+            padding: "12px 16px",
+            width: 320,
+            marginTop: 16,
+            marginBottom: 24,
+            background: "white",
+            border: "1px solid var(--border)",
+            color: "var(--text-dark)",
+            borderRadius: 999,
+            fontSize: 14,
+            outline: "none",
+          }}
+        />
+
+        {selectedPaper ? (
+          <PaperDetail
+            paper={selectedPaper}
+            papers={research.papers}
+            prerequisites={prerequisites}
+            citations={citations}
+            onBack={() => setSelectedPaperId(null)}
+          />
+        ) : (
+          <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
+            {papers.length === 0 ? (
+              <p style={{ color: "var(--text-muted)" }}>No papers match your search.</p>
+            ) : (
+              papers.map((paper) => (
+                <PaperCard key={paper.id} paper={paper} onOpen={() => setSelectedPaperId(paper.id)} />
+              ))
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 function PaperCard({ paper, onOpen }) {
   return (
-    <div
-      onClick={onOpen}
-      style={{
-        border: "1px solid #333",
-        borderRadius: 8,
-        padding: 16,
-        background: "#161616",
-        cursor: "pointer",
-      }}
-    >
-      <h3 style={{ marginTop: 0 }}>{paper.title || paper.file.split("/").pop()}</h3>
+    <div className="card" onClick={onOpen} style={{ cursor: "pointer" }}>
+      <div style={{ fontSize: 26 }}>📄</div>
+      <h3 style={{ margin: "10px 0 4px", fontSize: 16 }}>{paper.title || paper.file.split("/").pop()}</h3>
       {paper.authors && (
-        <p style={{ color: "#aaa", fontSize: 14 }}>
+        <p style={{ color: "var(--text-muted)", fontSize: 13 }}>
           {paper.authors}
           {paper.year ? ` • ${paper.year}` : ""}
         </p>
       )}
       {paper.abstract && (
-        <p style={{ fontSize: 13, color: "#888" }}>
-          {paper.abstract.length > 140 ? paper.abstract.slice(0, 140) + "…" : paper.abstract}
+        <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 8 }}>
+          {paper.abstract.length > 130 ? paper.abstract.slice(0, 130) + "…" : paper.abstract}
         </p>
       )}
-      <p style={{ fontSize: 12, color: "#666", marginTop: 10 }}>Open →</p>
+      <p style={{ fontSize: 13, color: "var(--primary)", marginTop: 14, fontWeight: 700 }}>Open →</p>
     </div>
   );
 }
@@ -134,14 +132,15 @@ function PaperDetail({ paper, papers, prerequisites, citations, onBack }) {
   };
 
   return (
-    <div style={{ border: "1px solid #333", borderRadius: 8, padding: 24, background: "#161616", maxWidth: 700 }}>
-      <button onClick={onBack} style={{ marginBottom: 16 }}>
+    <div className="card" style={{ maxWidth: 720 }}>
+      <button className="btn btn-outline" onClick={onBack} style={{ marginBottom: 20, padding: "8px 18px", fontSize: 13 }}>
         ← Back to list
       </button>
 
-      <h2 style={{ marginTop: 0 }}>{paper.title || paper.file.split("/").pop()}</h2>
+      <span className="badge badge-purple">Paper</span>
+      <h2 style={{ marginTop: 12 }}>{paper.title || paper.file.split("/").pop()}</h2>
       {paper.authors && (
-        <p style={{ color: "#aaa" }}>
+        <p style={{ color: "var(--text-muted)" }}>
           {paper.authors}
           {paper.year ? ` • ${paper.year}` : ""}
         </p>
@@ -149,38 +148,40 @@ function PaperDetail({ paper, papers, prerequisites, citations, onBack }) {
 
       {paper.abstract && (
         <>
-          <h4>Abstract</h4>
-          <p style={{ fontSize: 14 }}>{paper.abstract}</p>
+          <p style={sectionLabel}>Abstract</p>
+          <p style={{ fontSize: 14, color: "var(--text-muted)" }}>{paper.abstract}</p>
         </>
       )}
 
       {paper.ai_summary && (
         <>
-          <h4>AI Summary</h4>
-          <p style={{ fontSize: 14 }}>{paper.ai_summary}</p>
+          <p style={sectionLabel}>AI Summary</p>
+          <p style={{ fontSize: 14, color: "var(--text-muted)" }}>{paper.ai_summary}</p>
         </>
       )}
 
-      <h4>Why am I reading this now?</h4>
+      <p style={sectionLabel}>Why am I reading this now?</p>
       {requires.length === 0 ? (
-        <p style={{ fontSize: 14, color: "#888" }}>No prerequisites recorded.</p>
+        <p style={{ fontSize: 14, color: "var(--text-muted)" }}>No prerequisites recorded.</p>
       ) : (
         requires.map((r) => (
-          <div key={r.id} style={{ marginBottom: 12 }}>
-            <p style={{ fontSize: 14 }}>
+          <div key={r.id} style={{ background: "var(--primary-light)", borderRadius: 10, padding: 12, marginBottom: 8 }}>
+            <p style={{ margin: 0, fontSize: 13 }}>
               Requires: <strong>{findTitle(r.prerequisite_paper)}</strong>
             </p>
-            {r.reason && <p style={{ fontSize: 13, color: "#aaa" }}>{r.reason}</p>}
+            {r.reason && <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--text-muted)" }}>{r.reason}</p>}
             {r.confidence != null && (
-              <p style={{ fontSize: 12, color: "#666" }}>Confidence: {Math.round(r.confidence * 100)}%</p>
+              <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--text-muted)" }}>
+                Confidence: {Math.round(r.confidence * 100)}%
+              </p>
             )}
           </div>
         ))
       )}
 
-      <h4>Citations</h4>
+      <p style={sectionLabel}>Citations</p>
       {citesOut.length === 0 && citedByIn.length === 0 ? (
-        <p style={{ fontSize: 14, color: "#888" }}>No citation links recorded.</p>
+        <p style={{ fontSize: 14, color: "var(--text-muted)" }}>No citation links recorded.</p>
       ) : (
         <>
           {citesOut.map((c) => (
@@ -196,11 +197,21 @@ function PaperDetail({ paper, papers, prerequisites, citations, onBack }) {
         </>
       )}
 
-      <a href={paper.file} target="_blank" rel="noreferrer" style={{ display: "inline-block", marginTop: 20 }}>
+      <a href={paper.file} target="_blank" rel="noreferrer" className="btn btn-primary" style={{ display: "inline-block", marginTop: 20 }}>
         Open PDF
       </a>
     </div>
   );
 }
+
+const sectionLabel = {
+  fontWeight: 700,
+  fontSize: 12,
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
+  color: "var(--primary)",
+  marginTop: 20,
+  marginBottom: 6,
+};
 
 export default PaperExplorer;

@@ -1,8 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useParams , Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import ReactFlow, { Background, Controls, MarkerType } from "reactflow";
 import "reactflow/dist/style.css";
 import { api } from "../api/client";
+import "../styles/theme.css";
+
+const STATUS_BADGE = {
+  pending: "badge-yellow",
+  analyzing: "badge-purple",
+  ready: "badge-teal",
+  failed: "badge-coral",
+};
 
 function ResearchWorkspace() {
   const { id } = useParams();
@@ -50,139 +58,180 @@ function ResearchWorkspace() {
     return () => clearInterval(pollRef.current);
   }, [fetchAll]);
 
-  if (loading) return <p>Loading research session...</p>;
-  if (error) return <p>Error: {error}</p>;
-  if (!research) return <p>Not found.</p>;
+  if (loading) return <div style={{ padding: 60 }}>Loading research session...</div>;
+  if (error) return <div style={{ padding: 60 }}>Error: {error}</div>;
+  if (!research) return <div style={{ padding: 60 }}>Not found.</div>;
 
   const isAnalyzing = research.status === "pending" || research.status === "analyzing";
 
+  const TABS = [
+    { key: "path", label: "Learning Path" },
+    { key: "knowledge", label: "Knowledge Graph" },
+    { key: "citations", label: "Citation Graph" },
+    { key: "papers", label: "Papers" },
+  ];
+
   return (
-    <div className="page research-workspace" style={{ display: "flex" }}>
-      <div style={{ flex: 1, padding: 40 }}>
-        <header>
-            <h1>{research.topic}</h1>
-            <p>
-                {research.papers.length} paper(s) &bull; status: {research.status}
-            </p>
-            <Link to={`/research/${id}/papers`} style={{ color: "#7a9dff" }}>
-                Open Paper Explorer →
-            </Link>         
-            {" | "}
-            <Link to={`/research/${id}/assistant`} style={{ color: "#7a9dff" }}>
-            Ask AI Assistant →
-            </Link>
-        </header>
+    <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
+      <div className="container" style={{ paddingTop: 24 }}>
+        <div className="pill-nav">
+          <Link to="/dashboard" style={{ fontWeight: 800, fontSize: 18, color: "var(--primary)" }}>
+            ← Dashboard
+          </Link>
+          <Link to={`/research/${id}/papers`} className="nav-link" style={{ fontWeight: 600, color: "var(--primary)" }}>
+            Open Paper Explorer →
+          </Link>
+        </div>
+      </div>
+
+      <div className="container" style={{ marginTop: 30 }}>
+        <div className="card">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
+            <div>
+              <h1 style={{ fontSize: 30, margin: 0 }}>{research.topic}</h1>
+              <p style={{ color: "var(--text-muted)", marginTop: 6 }}>
+                {research.papers.length} paper(s)
+              </p>
+            </div>
+            <span className={`badge ${STATUS_BADGE[research.status]}`} style={{ fontSize: 13, padding: "6px 16px" }}>
+              {research.status}
+            </span>
+          </div>
+        </div>
 
         {isAnalyzing && (
-          <div style={{ padding: 20, border: "1px solid #444", borderRadius: 8, marginTop: 20 }}>
-            <p>
-              {research.status === "pending"
-                ? "Queued for analysis..."
-                : "Analyzing your research... this can take a minute."}
+          <div className="card" style={{ marginTop: 20, borderLeft: "4px solid var(--accent-blue)" }}>
+            <p style={{ margin: 0, fontWeight: 600 }}>
+              {research.status === "pending" ? "⏳ Queued for analysis..." : "🔄 Analyzing your research... this can take a minute."}
             </p>
           </div>
         )}
 
         {research.status === "failed" && (
-          <p style={{ color: "salmon" }}>Analysis failed. Please try again.</p>
+          <div className="card" style={{ marginTop: 20, borderLeft: "4px solid var(--accent-coral)" }}>
+            <p style={{ margin: 0, color: "#E14B4B", fontWeight: 600 }}>Analysis failed. Please try again.</p>
+          </div>
         )}
 
         {research.status === "ready" && (
           <>
-            <div style={{ display: "flex", gap: 8, marginTop: 20, marginBottom: 10 }}>
-              <button onClick={() => setActiveTab("path")} disabled={activeTab === "path"}>
-                Learning Path
-              </button>
-              <button onClick={() => setActiveTab("knowledge")} disabled={activeTab === "knowledge"}>
-                Knowledge Graph
-              </button>
-              <button onClick={() => setActiveTab("citations")} disabled={activeTab === "citations"}>
-                Citation Graph
-              </button>
-              <button onClick={() => setActiveTab("papers")} disabled={activeTab === "papers"}>
-                Papers
-              </button>
+            <div style={{ display: "flex", gap: 10, marginTop: 24, flexWrap: "wrap" }}>
+              {TABS.map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => setActiveTab(t.key)}
+                  className={activeTab === t.key ? "btn btn-primary" : "btn btn-outline"}
+                  style={{ padding: "10px 20px", fontSize: 14 }}
+                >
+                  {t.label}
+                </button>
+              ))}
             </div>
 
-            {activeTab === "path" && (
-              <LearningPathGraph
-                papers={research.papers}
-                prerequisites={prerequisites}
-                onNodeClick={(paperId) => setSelectedPaper(paperId)}
-              />
-            )}
+            <div style={{ display: "flex", gap: 20, marginTop: 20 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+                  {activeTab === "path" && (
+                    <LearningPathGraph
+                      papers={research.papers}
+                      prerequisites={prerequisites}
+                      onNodeClick={(paperId) => setSelectedPaper(paperId)}
+                    />
+                  )}
+                  {activeTab === "knowledge" && (
+                    <KnowledgeGraph
+                      papers={research.papers}
+                      concepts={concepts}
+                      paperConcepts={paperConcepts}
+                      onPaperClick={(paperId) => setSelectedPaper(paperId)}
+                    />
+                  )}
+                  {activeTab === "citations" && (
+                    <CitationGraph
+                      papers={research.papers}
+                      citations={citations}
+                      onNodeClick={(paperId) => setSelectedPaper(paperId)}
+                    />
+                  )}
+                  {activeTab === "papers" && (
+                    <div style={{ padding: 24 }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 14 }}>
+                        {research.papers.map((paper) => (
+                          <div
+                            key={paper.id}
+                            onClick={() => setSelectedPaper(paper.id)}
+                            style={{
+                              padding: 16,
+                              borderRadius: 12,
+                              border: "1px solid var(--border)",
+                              cursor: "pointer",
+                              background: "var(--primary-light)",
+                            }}
+                          >
+                            <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>
+                              📄 {paper.title || paper.file.split("/").pop()}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
 
-            {activeTab === "knowledge" && (
-              <KnowledgeGraph
-                papers={research.papers}
-                concepts={concepts}
-                paperConcepts={paperConcepts}
-                onPaperClick={(paperId) => setSelectedPaper(paperId)}
-              />
-            )}
-
-            {activeTab === "citations" && (
-              <CitationGraph
-                papers={research.papers}
-                citations={citations}
-                onNodeClick={(paperId) => setSelectedPaper(paperId)}
-              />
-            )}
-
-            {activeTab === "papers" && (
-              <ul>
-                {research.papers.map((paper) => (
-                  <li key={paper.id}>{paper.title || paper.file.split("/").pop()}</li>
-                ))}
-              </ul>
-            )}
+              {selectedPaper && (
+                <PaperDrawer
+                  paperId={selectedPaper}
+                  papers={research.papers}
+                  prerequisites={prerequisites}
+                  citations={citations}
+                  onClose={() => setSelectedPaper(null)}
+                />
+              )}
+            </div>
           </>
         )}
       </div>
-
-      {selectedPaper && (
-        <PaperDrawer
-          paperId={selectedPaper}
-          papers={research.papers}
-          prerequisites={prerequisites}
-          citations={citations}
-          onClose={() => setSelectedPaper(null)}
-        />
-      )}
+      <div style={{ height: 60 }} />
     </div>
   );
 }
 
+const nodeStyle = {
+  background: "white",
+  color: "var(--text-dark)",
+  border: "1.5px solid var(--primary)",
+  borderRadius: 12,
+  padding: 12,
+  width: 190,
+  cursor: "pointer",
+  fontWeight: 600,
+  fontSize: 13,
+  boxShadow: "0 4px 10px rgba(108,93,211,0.12)",
+};
+
 function LearningPathGraph({ papers, prerequisites, onNodeClick }) {
-  if (papers.length === 0) return <p>No papers to show.</p>;
+  if (papers.length === 0) return <p style={{ padding: 24 }}>No papers to show.</p>;
 
   const nodes = papers.map((paper, i) => ({
     id: String(paper.id),
-    position: { x: i * 220, y: 100 },
-    data: { label: paper.title || paper.file.split("/").pop() },
-    style: {
-      background: "#1e1e1e",
-      color: "#fff",
-      border: "1px solid #555",
-      borderRadius: 8,
-      padding: 10,
-      width: 180,
-      cursor: "pointer",
-    },
+    position: { x: i * 240, y: 100 },
+    data: { label: `📄 ${paper.title || paper.file.split("/").pop()}` },
+    style: nodeStyle,
   }));
 
   const edges = prerequisites.map((p) => ({
     id: `e${p.id}`,
     source: String(p.prerequisite_paper),
     target: String(p.paper),
-    markerEnd: { type: MarkerType.ArrowClosed },
-    style: { stroke: "#888" },
+    markerEnd: { type: MarkerType.ArrowClosed, color: "#6C5DD3" },
+    style: { stroke: "#6C5DD3", strokeWidth: 2 },
   }));
 
   return (
-    <div style={{ height: 400, border: "1px solid #333", borderRadius: 8 }}>
+    <div style={{ height: 420 }}>
       <ReactFlow nodes={nodes} edges={edges} fitView onNodeClick={(event, node) => onNodeClick(node.id)}>
-        <Background />
+        <Background color="#D8D3F5" gap={18} />
         <Controls />
       </ReactFlow>
     </div>
@@ -190,36 +239,29 @@ function LearningPathGraph({ papers, prerequisites, onNodeClick }) {
 }
 
 function CitationGraph({ papers, citations, onNodeClick }) {
-  if (papers.length === 0) return <p>No papers to show.</p>;
+  if (papers.length === 0) return <p style={{ padding: 24 }}>No papers to show.</p>;
 
   const nodes = papers.map((paper, i) => ({
     id: String(paper.id),
-    position: { x: i * 220, y: 100 },
-    data: { label: paper.title || paper.file.split("/").pop() },
-    style: {
-      background: "#1e1e1e",
-      color: "#fff",
-      border: "1px solid #555",
-      borderRadius: 8,
-      padding: 10,
-      width: 180,
-      cursor: "pointer",
-    },
+    position: { x: i * 240, y: 100 },
+    data: { label: `📄 ${paper.title || paper.file.split("/").pop()}` },
+    style: nodeStyle,
   }));
 
   const edges = citations.map((c) => ({
     id: `c${c.id}`,
     source: String(c.citing_paper),
     target: String(c.cited_paper),
-    markerEnd: { type: MarkerType.ArrowClosed },
-    style: { stroke: "#5a8dee" },
+    markerEnd: { type: MarkerType.ArrowClosed, color: "#4A90E2" },
+    style: { stroke: "#4A90E2", strokeWidth: 2 },
     label: "cites",
+    labelStyle: { fill: "#4A90E2", fontWeight: 700, fontSize: 12 },
   }));
 
   return (
-    <div style={{ height: 400, border: "1px solid #333", borderRadius: 8 }}>
+    <div style={{ height: 420 }}>
       <ReactFlow nodes={nodes} edges={edges} fitView onNodeClick={(event, node) => onNodeClick(node.id)}>
-        <Background />
+        <Background color="#D8D3F5" gap={18} />
         <Controls />
       </ReactFlow>
     </div>
@@ -228,70 +270,62 @@ function CitationGraph({ papers, citations, onNodeClick }) {
 
 function KnowledgeGraph({ papers, concepts, paperConcepts, onPaperClick }) {
   if (concepts.length === 0) {
-    return <p>No concepts recorded yet.</p>;
+    return <p style={{ padding: 24, color: "var(--text-muted)" }}>No concepts recorded yet.</p>;
   }
 
-  // Papers on top row, concepts on bottom row.
   const paperNodes = papers.map((paper, i) => ({
     id: `paper-${paper.id}`,
-    position: { x: i * 220, y: 50 },
-    data: { label: paper.title || paper.file.split("/").pop() },
-    style: {
-      background: "#1e1e1e",
-      color: "#fff",
-      border: "1px solid #555",
-      borderRadius: 8,
-      padding: 10,
-      width: 180,
-      cursor: "pointer",
-    },
+    position: { x: i * 240, y: 40 },
+    data: { label: `📄 ${paper.title || paper.file.split("/").pop()}` },
+    style: nodeStyle,
   }));
 
   const conceptNodes = concepts.map((concept, i) => ({
     id: `concept-${concept.id}`,
-    position: { x: i * 220, y: 300 },
+    position: { x: i * 240, y: 280 },
     data: { label: concept.name },
     style: {
-      background: "#2a1e3d",
-      color: "#fff",
-      border: "1px solid #7a5fc9",
+      background: "var(--accent-yellow)",
+      color: "#6B4E00",
+      border: "none",
       borderRadius: "50%",
       padding: 10,
-      width: 140,
-      height: 140,
+      width: 130,
+      height: 130,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       textAlign: "center",
+      fontWeight: 700,
+      fontSize: 13,
+      boxShadow: "0 4px 14px rgba(255,197,66,0.4)",
     },
   }));
 
-  // introduces: paper -> concept. requires: concept -> paper.
   const edges = paperConcepts.map((pc) => {
     const isIntroduces = pc.role === "introduces";
     return {
       id: `pc${pc.id}`,
       source: isIntroduces ? `paper-${pc.paper}` : `concept-${pc.concept}`,
       target: isIntroduces ? `concept-${pc.concept}` : `paper-${pc.paper}`,
-      markerEnd: { type: MarkerType.ArrowClosed },
-      style: { stroke: isIntroduces ? "#4caf50" : "#e0a030" },
+      markerEnd: { type: MarkerType.ArrowClosed, color: isIntroduces ? "#2ED9C3" : "#FF6B6B" },
+      style: { stroke: isIntroduces ? "#2ED9C3" : "#FF6B6B", strokeWidth: 2 },
       label: isIntroduces ? "introduces" : "requires",
+      labelStyle: { fontWeight: 700, fontSize: 12, fill: isIntroduces ? "#1AA893" : "#E14B4B" },
     };
   });
 
   return (
-    <div style={{ height: 450, border: "1px solid #333", borderRadius: 8 }}>
+    <div style={{ height: 460 }}>
       <ReactFlow
         nodes={[...paperNodes, ...conceptNodes]}
         edges={edges}
         fitView
         onNodeClick={(event, node) => {
-          if (node.id.startsWith("paper-")) {
-            onPaperClick(node.id.replace("paper-", ""));
-          }
+          if (node.id.startsWith("paper-")) onPaperClick(node.id.replace("paper-", ""));
         }}
       >
-        <Background />
+        <Background color="#D8D3F5" gap={18} />
         <Controls />
       </ReactFlow>
     </div>
@@ -312,14 +346,16 @@ function PaperDrawer({ paperId, papers, prerequisites, citations, onClose }) {
   };
 
   return (
-    <div style={{ width: 320, borderLeft: "1px solid #333", padding: 20, background: "#141414", color: "#fff" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h3 style={{ margin: 0 }}>{paper.title || paper.file.split("/").pop()}</h3>
-        <button onClick={onClose}>×</button>
+    <div className="card" style={{ width: 320, flexShrink: 0, height: "fit-content" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <h3 style={{ margin: 0, fontSize: 16 }}>{paper.title || paper.file.split("/").pop()}</h3>
+        <span onClick={onClose} style={{ cursor: "pointer", fontSize: 20, color: "var(--text-muted)" }}>
+          ×
+        </span>
       </div>
 
       {paper.authors && (
-        <p style={{ color: "#aaa" }}>
+        <p style={{ color: "var(--text-muted)", fontSize: 13, marginTop: 6 }}>
           {paper.authors}
           {paper.year ? ` • ${paper.year}` : ""}
         </p>
@@ -327,47 +363,47 @@ function PaperDrawer({ paperId, papers, prerequisites, citations, onClose }) {
 
       {paper.abstract && (
         <>
-          <h4>Abstract</h4>
-          <p style={{ fontSize: 14 }}>{paper.abstract}</p>
+          <p style={sectionLabel}>Abstract</p>
+          <p style={{ fontSize: 13, color: "var(--text-muted)" }}>{paper.abstract}</p>
         </>
       )}
 
       {paper.ai_summary && (
         <>
-          <h4>AI Summary</h4>
-          <p style={{ fontSize: 14 }}>{paper.ai_summary}</p>
+          <p style={sectionLabel}>AI Summary</p>
+          <p style={{ fontSize: 13, color: "var(--text-muted)" }}>{paper.ai_summary}</p>
         </>
       )}
 
-      <h4>Why this paper is here</h4>
+      <p style={sectionLabel}>Why this paper is here</p>
       {requires.length === 0 ? (
-        <p style={{ fontSize: 14, color: "#888" }}>No prerequisites recorded.</p>
+        <p style={{ fontSize: 13, color: "var(--text-muted)" }}>No prerequisites recorded.</p>
       ) : (
         requires.map((r) => (
-          <div key={r.id} style={{ marginBottom: 12 }}>
-            <p style={{ fontSize: 14 }}>
+          <div key={r.id} className="badge badge-purple" style={{ display: "block", marginBottom: 8, padding: 10 }}>
+            <p style={{ margin: 0, fontSize: 12 }}>
               Requires: <strong>{findTitle(r.prerequisite_paper)}</strong>
             </p>
-            {r.reason && <p style={{ fontSize: 13, color: "#aaa" }}>{r.reason}</p>}
+            {r.reason && <p style={{ margin: "4px 0 0", fontSize: 11, opacity: 0.85 }}>{r.reason}</p>}
             {r.confidence != null && (
-              <p style={{ fontSize: 12, color: "#666" }}>Confidence: {Math.round(r.confidence * 100)}%</p>
+              <p style={{ margin: "4px 0 0", fontSize: 11, opacity: 0.7 }}>Confidence: {Math.round(r.confidence * 100)}%</p>
             )}
           </div>
         ))
       )}
 
-      <h4>Citations</h4>
+      <p style={sectionLabel}>Citations</p>
       {citesOut.length === 0 && citedByIn.length === 0 ? (
-        <p style={{ fontSize: 14, color: "#888" }}>No citation links recorded.</p>
+        <p style={{ fontSize: 13, color: "var(--text-muted)" }}>No citation links recorded.</p>
       ) : (
         <>
           {citesOut.map((c) => (
-            <p key={c.id} style={{ fontSize: 14 }}>
+            <p key={c.id} style={{ fontSize: 13 }}>
               Cites: <strong>{findTitle(c.cited_paper)}</strong>
             </p>
           ))}
           {citedByIn.map((c) => (
-            <p key={c.id} style={{ fontSize: 14 }}>
+            <p key={c.id} style={{ fontSize: 13 }}>
               Cited by: <strong>{findTitle(c.citing_paper)}</strong>
             </p>
           ))}
@@ -376,5 +412,15 @@ function PaperDrawer({ paperId, papers, prerequisites, citations, onClose }) {
     </div>
   );
 }
+
+const sectionLabel = {
+  fontWeight: 700,
+  fontSize: 12,
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
+  color: "var(--primary)",
+  marginTop: 18,
+  marginBottom: 6,
+};
 
 export default ResearchWorkspace;

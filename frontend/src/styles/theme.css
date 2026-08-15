@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg: #EDEBFB;
+  --card-bg: #FFFFFF;
+  --primary: #6C5DD3;
+  --primary-dark: #5645C4;
+  --primary-light: #EFE9FF;
+  --accent-teal: #2ED9C3;
+  --accent-coral: #FF6B6B;
+  --accent-yellow: #FFC542;
+  --accent-blue: #4A90E2;
+  --text-dark: #1F2044;
+  --text-muted: #6B7290;
+  --border: #E3E1F5;
+  --radius: 18px;
+  --shadow: 0 8px 24px rgba(108, 93, 211, 0.10);
+}
+
+* { box-sizing: border-box; }
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-dark);
+  margin: 0;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text-dark);
+  font-family: 'Poppins', system-ui, sans-serif;
+}
+
+a { text-decoration: none; color: inherit; }
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  padding: 24px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 12px 28px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn:hover { transform: translateY(-2px); }
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 6px 18px rgba(108, 93, 211, 0.35);
+}
+.btn-primary:hover { background: var(--primary-dark); }
+
+.btn-outline {
+  background: white;
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+}
+
+.pill-nav {
+  background: white;
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  padding: 12px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-link {
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 15px;
+  margin: 0 14px;
+}
+.nav-link:hover { color: var(--primary); }
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-purple { background: var(--primary-light); color: var(--primary); }
+.badge-teal { background: #E3FBF8; color: #1AA893; }
+.badge-coral { background: #FFECEC; color: #E14B4B; }
+.badge-yellow { background: #FFF6E0; color: #C98A00; }
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-dark);
+}
+.stat-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+input, textarea {
+  font-family: inherit;
+}

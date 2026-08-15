@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
+import "../styles/theme.css";
 
 const KNOWN_CONCEPTS = [
   "Programming Basics",
@@ -29,9 +30,7 @@ function ResearchSetup() {
 
   function toggleConcept(concept) {
     setKnownConcepts((prev) =>
-      prev.includes(concept)
-        ? prev.filter((c) => c !== concept)
-        : [...prev, concept]
+      prev.includes(concept) ? prev.filter((c) => c !== concept) : [...prev, concept]
     );
   }
 
@@ -71,75 +70,150 @@ function ResearchSetup() {
   }
 
   return (
-    <div className="page research-setup">
-      <h1>What do you want to learn?</h1>
+    <div style={{ background: "var(--bg)", minHeight: "100vh", paddingBottom: 60 }}>
+      <div className="container" style={{ paddingTop: 40, maxWidth: 760 }}>
+        <span className="badge badge-purple">Step 1 of 1</span>
+        <h1 style={{ fontSize: 36, fontWeight: 800, marginTop: 14 }}>What do you want to learn?</h1>
+        <p style={{ color: "var(--text-muted)", marginTop: 4 }}>
+          Give a topic and a few papers — we'll take it from there.
+        </p>
 
-      <form onSubmit={handleSubmit}>
-        <label>
-          Research topic
-          <input
-            type="text"
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            placeholder="Dynamic Programming"
-          />
-        </label>
+        <form onSubmit={handleSubmit} style={{ marginTop: 30, display: "flex", flexDirection: "column", gap: 20 }}>
+          {/* Topic + upload */}
+          <div className="card">
+            <label style={labelStyle}>Research Topic</label>
+            <input
+              type="text"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              placeholder="e.g. Dynamic Programming"
+              style={inputStyle}
+            />
 
-        <label>
-          Upload papers (at least 2 PDFs)
-          <input
-            type="file"
-            accept="application/pdf"
-            multiple
-            onChange={(e) => setFiles(Array.from(e.target.files))}
-          />
-        </label>
-        {files.length > 0 && (
-          <ul>
-            {files.map((f, i) => (
-              <li key={i}>{f.name}</li>
-            ))}
-          </ul>
-        )}
-
-        <fieldset>
-          <legend>What do you already know? (optional)</legend>
-          {KNOWN_CONCEPTS.map((concept) => (
-            <label key={concept}>
+            <label style={{ ...labelStyle, marginTop: 20 }}>Upload Papers</label>
+            <div
+              style={{
+                border: "2px dashed var(--border)",
+                borderRadius: 14,
+                padding: "28px 20px",
+                textAlign: "center",
+                background: "var(--primary-light)",
+              }}
+            >
+              <div style={{ fontSize: 28 }}>📄</div>
+              <p style={{ color: "var(--text-muted)", fontSize: 14, margin: "8px 0 14px" }}>
+                Drop PDFs here, or browse — at least 2 required
+              </p>
               <input
-                type="checkbox"
-                checked={knownConcepts.includes(concept)}
-                onChange={() => toggleConcept(concept)}
+                type="file"
+                accept="application/pdf"
+                multiple
+                onChange={(e) => setFiles(Array.from(e.target.files))}
               />
-              {concept}
-            </label>
-          ))}
-        </fieldset>
+            </div>
 
-        <fieldset>
-          <legend>What is your goal?</legend>
-          {GOALS.map((g) => (
-            <label key={g}>
-              <input
-                type="radio"
-                name="goal"
-                value={g}
-                checked={goal === g}
-                onChange={() => setGoal(g)}
-              />
-              {g}
-            </label>
-          ))}
-        </fieldset>
+            {files.length > 0 && (
+              <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {files.map((f, i) => (
+                  <span key={i} className="badge badge-teal">
+                    ✓ {f.name}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
 
-        {error && <p className="error-text">{error}</p>}
+          {/* Existing knowledge */}
+          <div className="card">
+            <label style={labelStyle}>What do you already know? (optional)</label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 12 }}>
+              {KNOWN_CONCEPTS.map((concept) => {
+                const active = knownConcepts.includes(concept);
+                return (
+                  <button
+                    type="button"
+                    key={concept}
+                    onClick={() => toggleConcept(concept)}
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: 999,
+                      border: active ? "1.5px solid var(--primary)" : "1.5px solid var(--border)",
+                      background: active ? "var(--primary-light)" : "white",
+                      color: active ? "var(--primary)" : "var(--text-muted)",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {active ? "✓ " : ""}
+                    {concept}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-        <button type="submit" disabled={submitting} className="btn-primary">
-          {submitting ? "Analyzing..." : "Analyze Papers \u2192"}
-        </button>
-      </form>
+          {/* Goal */}
+          <div className="card">
+            <label style={labelStyle}>What is your goal?</label>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, marginTop: 12 }}>
+              {GOALS.map((g) => {
+                const active = goal === g;
+                return (
+                  <button
+                    type="button"
+                    key={g}
+                    onClick={() => setGoal(g)}
+                    style={{
+                      padding: "14px 16px",
+                      borderRadius: 12,
+                      textAlign: "left",
+                      border: active ? "1.5px solid var(--primary)" : "1.5px solid var(--border)",
+                      background: active ? "var(--primary-light)" : "white",
+                      color: active ? "var(--primary)" : "var(--text-dark)",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {active ? "● " : "○ "}
+                    {g}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {error && (
+            <p style={{ color: "#E14B4B", background: "#FFECEC", padding: "10px 14px", borderRadius: 10, fontSize: 14 }}>
+              {error}
+            </p>
+          )}
+
+          <button type="submit" disabled={submitting} className="btn btn-primary" style={{ alignSelf: "center", padding: "14px 40px", fontSize: 16 }}>
+            {submitting ? "Analyzing..." : "Analyze Papers →"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
+
+const labelStyle = {
+  display: "block",
+  fontWeight: 700,
+  fontSize: 14,
+  color: "var(--text-dark)",
+  marginBottom: 8,
+};
+
+const inputStyle = {
+  width: "100%",
+  padding: "12px 14px",
+  borderRadius: 10,
+  border: "1px solid var(--border)",
+  fontSize: 15,
+  outline: "none",
+};
 
 export default ResearchSetup;
